@@ -15,7 +15,6 @@ from datetime import datetime
 from reportlab.lib.pagesizes import A4
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle
 from barcode import EAN13
-from cv2_collage import create_collage
 import shutil
 import cairosvg
 
@@ -1156,24 +1155,6 @@ class FunctionsOfBarCodeInformations(GeneralFunctions):
             new_image.close()
 
         return [directoryCompleted + '.png', code.get_fullcode()]
-
-    def create_image_colage(self):
-        folderImages = filedialog.askdirectory(title='Selecione a pasta com as imagens')
-        if folderImages != '':
-            listBarCodes = [os.path.join(f'{folderImages}', foto) for foto in os.listdir(f'{folderImages}')]
-
-            if len(listBarCodes) > 4:
-                saveDirectory = filedialog.asksaveasfilename(defaultextension="*.png ", filetypes=[('Arquivos de png', "*.png")])
-                if saveDirectory is not None:
-                    cola = create_collage(
-                        lst=listBarCodes,
-                        width=1000,
-                        background=(255, 255, 255),
-                        save_path=f'{saveDirectory}',
-                    )
-                    self.message_window(1, 'Concluído', messagein=f'O arquivo foi salvo em "{saveDirectory}"')
-            else:
-                self.message_window(2, 'Imagens insuficientes', 'Tenha no mínimo 4 imagens para a colagem')
 
     def create_pdf_barCode(self, treeview):
         if informationsTreeview := self.pick_informations_treeview(treeview):
