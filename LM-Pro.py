@@ -33,7 +33,9 @@ class Aplication(
             'informations': DataBase('resources/informações.db'),
             'stock': DataBase('resources/Estoque.db'),
             'cash': DataBase('resources/Caixa.db'),
+            'config': DataBase('resources/config.db'),
         }
+        self.openColorPicker = True
         self.criptography = Criptography()
         self.bot = SendMessage()
         super().__init__()
@@ -41,7 +43,7 @@ class Aplication(
 
     def login_window(self):
         self.loginWindow = Tk()
-        self.loginWindow.title('Login - MS Pro')
+        self.loginWindow.title('Login - LM Pro')
         width = self.loginWindow.winfo_screenwidth()
         height = self.loginWindow.winfo_screenheight()
         posx = width / 2 - 800 / 2
@@ -51,7 +53,7 @@ class Aplication(
         self.loginWindow.iconphoto(False, PhotoImage(file='assets/logo.png'))
 
         # logo image ==============================
-        logoImage = self.labels(self.loginWindow, '', 0.009, 0.01, width=0.48, height=0.98, photo=self.image('assets/Marca-Morgania-Sousa.png', (300, 233))[0], position=CENTER)
+        logoImage = self.labels(self.loginWindow, '', 0.009, 0.01, width=0.48, height=0.98, photo=self.image('assets/logo.png', (330, 233))[0], position=CENTER)
 
         # frame of inputs =========================
         frameInputs = self.frame(self.loginWindow, 0.5, 0.005, 0.49, 0.985, border=2, radius=10)
@@ -106,18 +108,19 @@ class Aplication(
         self.root.geometry(f'{self.root.winfo_screenwidth()}x{self.root.winfo_screenheight()}')
         self.root.configure(background='#FFFFFF')
         self.root.iconphoto(False, PhotoImage(file='assets/logo.png'))
-        self.root.wm_protocol('WM_DELETE_WINDOW', lambda: self.loginWindow.destroy())
+        self.root.wm_protocol('WM_DELETE_WINDOW', lambda: [self.backup_dataBaes_discret(), self.loginWindow.destroy()])
         # event bind ============================================
         self.root.bind_all('<Control-b>', lambda e: self.backup_dataBaes())
+        self.root.bind_all('<Control-l>', lambda e: self.loading_database())
 
         # style notebook
         style = ttk.Style()
-        style.configure("TNotebook.Tab", font=("Helvetica", 13, "bold"), foreground='#917c40')
+        style.configure("TNotebook.Tab", font=("Helvetica", 13, "bold"), foreground=self.colorsOfLabels[1])
 
         # style treeviews ==================================================
         style_treeview = ttk.Style()
         style_treeview.theme_use('vista')
-        style_treeview.configure('Treeview', rowheight=35, fieldbackground='#261c20', foreground='black', font='Arial 13')
+        style_treeview.configure('Treeview', rowheight=35, fieldbackground='#261c20', foreground=self.colorsOfLabels[0], font='Arial 13')
         style_treeview.map('Treeview', background=[('selected', '#241e11')])
         self.photosAndIcons = {
             'pdf': self.image('assets/icon_pdf.png', (46, 46)),
@@ -162,7 +165,7 @@ class Aplication(
         self.frame_barCode()
         # stock informations -----------------------------------------------------
         self.stockInformationsFrame = self.main_frame_notebook(self.informationsManagementTabview, ' Informações de estoque ')
-        self.typeStockInformations = self.tabvieew(self.stockInformationsFrame, 0, 0, 1, 0.98, background='white', border='white')
+        self.typeStockInformations = self.tabview(self.stockInformationsFrame, 0, 0, 1, 0.98, background='white', border='white')
         self.frame_stock_informations()
         # bar code management ---------------------------------------------------
         self.userFrame = self.main_frame_notebook(self.informationsManagementTabview, ' Usuários ')
@@ -173,7 +176,7 @@ class Aplication(
         self.inventoryControlManagementTabview = self.notebook(self.mainStockFrame)
         # stock management ---------------------------------------------------
         self.inventoryControlFrame = self.main_frame_notebook(self.inventoryControlManagementTabview, ' Gerenciamento de estoque ')
-        self.typeStockmanagement = self.tabvieew(self.inventoryControlFrame, 0, 0, 1, 0.98)
+        self.typeStockmanagement = self.tabview(self.inventoryControlFrame, 0, 0, 1, 0.98)
         # use stock management
         self.typeStockmanagement.add(' Estoque de uso ')
         self.frame_use_inventory_control()
@@ -182,7 +185,7 @@ class Aplication(
         self.frame_sale_inventory_control()
         # stock unusable management ---------------------------------------------------
         self.inventoryControlUnusableFrame = self.main_frame_notebook(self.inventoryControlManagementTabview, ' Estoque inutilizável ')
-        self.typeStockUnusableManagement = self.tabvieew(self.inventoryControlUnusableFrame, 0, 0, 1, 0.98, background='#917c3f')
+        self.typeStockUnusableManagement = self.tabview(self.inventoryControlUnusableFrame, 0, 0, 1, 0.98, background='#917c3f')
         # use stock management
         self.typeStockUnusableManagement.add(' Estoque de usados ')
         self.frame_use_inventory_control_unusable()
@@ -195,7 +198,7 @@ class Aplication(
         self.cashManagementTabview = self.notebook(self.mainCashRegisterFrame)
         # cash management ---------------------------------------------------
         self.cashFrame = self.main_frame_notebook(self.cashManagementTabview, ' Gerenciamento de caixa ')
-        self.typeCashManagement = self.tabvieew(self.cashFrame, 0, 0, 1, 0.98, background='white', border='white')
+        self.typeCashManagement = self.tabview(self.cashFrame, 0, 0, 1, 0.98, background='white', border='white')
         # day finish
         self.typeCashManagement.add(' Gerenciamento do dia ')
         self.frame_cash_register_management_day()
@@ -205,6 +208,23 @@ class Aplication(
         # employee management ---------------------------------------------------
         self.employersPayFrame = self.main_frame_notebook(self.cashManagementTabview, ' Gerenciar pagamentos ')
         self.frame_pay_management()
+
+        # configuration ============================================================
+        self.configurationFrame = self.main_frame_notebook(self.mainTabview, ' Configurações ')
+        self.configurationTabview = self.notebook(self.configurationFrame)
+        # costumization ---------------------------------------------------
+        self.costumizationFrame = self.main_frame_notebook(self.configurationTabview, ' Customização ')
+        # costimizators ===============================================
+        self.frameForCostumizations = self.frame(self.costumizationFrame, 0, 0.01, 0.999, 0.95)
+        self.frame_costumization_buttons()
+        self.frame_costumization_frames()
+        self.frame_costumization_tabview()
+        self.frame_costumization_treeview()
+        self.frame_costumization_entrys()
+        self.frame_costumization_labels()
+        self.save()
+        # loadings configs ---------------------------
+        self.load_configs()
 
         # filling in lists -----------------------------------------
         self.refresh_combobox_client()
@@ -384,7 +404,7 @@ class Aplication(
             return [entrysGet, entrys]
 
         # buttons management ============
-        frameBtns = self.tabvieew(self.frameInputsScheduling, 0.675, 0.02, 0.3, 0.9)
+        frameBtns = self.tabview(self.frameInputsScheduling, 0.675, 0.02, 0.3, 0.9)
         frameBtns.add('Agendamento')
         # add -------------
         addBtn = self.button(frameBtns.tab('Agendamento'), 'Adicionar serviço', 0.225, 0.08, 0.55, 0.2, function=lambda: self.register_scheduling(entryPicker()[0], type_function='add', treeview=self.treeviewScheduling))
@@ -2095,6 +2115,241 @@ class Aplication(
 
         # init search ===========================================
         self.search_payment(self.treeviewCashPayment, self.searching_list('', 7, 'ID'), insert=False)
+
+    # ================================== cash register configuration ===============================
+
+    def frame_costumization_buttons(self):
+        # buttons -------------------------
+        self.frameForButtons = self.frame(self.frameForCostumizations, 0.02, 0.02, 0.2, 0.3, border_color='#d2d2d2', type_frame='labelFrame', text='Botões')
+        # -> background
+        background = self.labels(self.frameForButtons, 'Cor de fundo:', 0.03, 0.03, 0.5, 0.1, size=13)
+        colorBgEntry = self.entry(self.frameForButtons, 0.4, 0.027, 0.3, 0.13, type_entry='entry', border_color='#d2d2d2', font_size=12)
+        colorPickerBg = self.button(
+            self.frameForButtons, '', 0.7, 0.001, 0.15, 0.17,
+            function=lambda: self.colorPicker(Btn, 'fg_color', colorBgEntry),
+            photo=self.image('assets/icon_colorPicker.png', (20, 20))[0], type_btn='buttonPhoto', background='white', hover_cursor='white'
+        )
+        # -> text color
+        textColor = self.labels(self.frameForButtons, 'Cor do texto:', 0.03, 0.2, 0.5, 0.1, size=13)
+        colorFgEntry = self.entry(self.frameForButtons, 0.4, 0.2, 0.3, 0.13, type_entry='entry', border_color='#d2d2d2', font_size=12)
+        colorPickerFg = self.button(
+            self.frameForButtons, '', 0.7, 0.17, 0.15, 0.17,
+            function=lambda: self.colorPicker(Btn, 'text_color', colorFgEntry),
+            photo=self.image('assets/icon_colorPicker.png', (20, 20))[0], type_btn='buttonPhoto', background='white', hover_cursor='white'
+        )
+        # -> text color
+        borderColor = self.labels(self.frameForButtons, 'Cor da borda:', 0.03, 0.37, 0.5, 0.1, size=13)
+        colorBdEntry = self.entry(self.frameForButtons, 0.4, 0.37, 0.3, 0.13, type_entry='entry', border_color='#d2d2d2', font_size=12)
+        colorPickerBd = self.button(
+            self.frameForButtons, '', 0.7, 0.34, 0.15, 0.17,
+            function=lambda: self.colorPicker(Btn, 'border_color', colorBdEntry),
+            photo=self.image('assets/icon_colorPicker.png', (20, 20))[0], type_btn='buttonPhoto', background='white', hover_cursor='white'
+        )
+        # -> hover color
+        hoverColor = self.labels(self.frameForButtons, 'Cor do hover:', 0.03, 0.54, 0.5, 0.1, size=13)
+        colorHvEntry = self.entry(self.frameForButtons, 0.4, 0.54, 0.3, 0.13, type_entry='entry', border_color='#d2d2d2', font_size=12)
+        colorPickerHv = self.button(
+            self.frameForButtons, '', 0.7, 0.51, 0.15, 0.17,
+            function=lambda: self.colorPicker(Btn, 'hover_color', colorHvEntry),
+            photo=self.image('assets/icon_colorPicker.png', (20, 20))[0], type_btn='buttonPhoto', background='white', hover_cursor='white'
+        )
+
+        # events bind ==========================
+        colorBgEntry.bind('<Return>', lambda e: self.colorPicker(Btn, 'fg_color', colorBgEntry, color_picker='no'))
+        colorFgEntry.bind('<Return>', lambda e: self.colorPicker(Btn, 'text_color', colorFgEntry, color_picker='no'))
+        colorBdEntry.bind('<Return>', lambda e: self.colorPicker(Btn, 'border_color', colorBdEntry, color_picker='no'))
+        colorHvEntry.bind('<Return>', lambda e: self.colorPicker(Btn, 'hover_color', colorHvEntry, color_picker='no'))
+
+        # line separator higher --------------------
+        lineHigher = self.line_separator(self.frameForButtons, 0.03, 0.67)
+
+        # demonstrative button ---------------------
+        Btn = self.button(self.frameForButtons, 'Texto', 0.18, 0.78, 0.6, 0.2)
+
+    def frame_costumization_frames(self):
+        # buttons -------------------------
+        self.frameForFrames = self.frame(self.frameForCostumizations, 0.02, 0.4, 0.2, 0.3, border_color='#d2d2d2', type_frame='labelFrame', text='Frames')
+
+        # -> background
+        background = self.labels(self.frameForFrames, 'Cor de fundo:', 0.03, 0.03, 0.5, 0.1, size=13)
+        colorBgEntry = self.entry(self.frameForFrames, 0.4, 0.027, 0.3, 0.13, type_entry='entry', border_color='#d2d2d2', font_size=12)
+        colorPickerBg = self.button(
+            self.frameForFrames, '', 0.7, 0.001, 0.15, 0.17,
+            function=lambda: self.colorPicker(frame, 'fg_color', colorBgEntry),
+            photo=self.image('assets/icon_colorPicker.png', (20, 20))[0], type_btn='buttonPhoto', background='white', hover_cursor='white'
+        )
+
+        # -> border
+        border = self.labels(self.frameForFrames, 'Cor da borda:', 0.03, 0.2, 0.5, 0.1, size=13)
+        colorBdEntry = self.entry(self.frameForFrames, 0.4, 0.2, 0.3, 0.13, type_entry='entry', border_color='#d2d2d2', font_size=12)
+        colorPickerBd = self.button(
+            self.frameForFrames, '', 0.7, 0.17, 0.15, 0.17,
+            function=lambda: self.colorPicker(frame, 'border_color', colorBdEntry),
+            photo=self.image('assets/icon_colorPicker.png', (20, 20))[0], type_btn='buttonPhoto', background='white', hover_cursor='white'
+        )
+
+        # events bind ==========================
+        colorBgEntry.bind('<Return>', lambda e: self.colorPicker(frame, 'fg_color', colorBgEntry, color_picker='no'))
+        colorBdEntry.bind('<Return>', lambda e: self.colorPicker(frame, 'border_color', colorBdEntry, color_picker='no'))
+
+        # line separator higher --------------------
+        lineHigher = self.line_separator(self.frameForFrames, 0.03, 0.35)
+
+        # demonstrative frame ---------------------
+        frame = self.frame(self.frameForFrames, 0.14, 0.475, 0.67, 0.5)
+
+    def frame_costumization_tabview(self):
+        # buttons -------------------------
+        self.frameForTabview = self.frame(self.frameForCostumizations, 0.38, 0.02, 0.2, 0.3, border_color='#d2d2d2', type_frame='labelFrame', text='Tabview')
+
+        # -> background
+        background = self.labels(self.frameForTabview, 'Cor de fundo:', 0.03, 0.03, 0.5, 0.1, size=13)
+        colorBgEntry = self.entry(self.frameForTabview, 0.4, 0.027, 0.3, 0.13, type_entry='entry', border_color='#d2d2d2', font_size=12)
+        colorPickerBg = self.button(
+            self.frameForTabview, '', 0.7, 0.001, 0.15, 0.17,
+            function=lambda: self.colorPicker(tabview, 'fg_color', colorBgEntry),
+            photo=self.image('assets/icon_colorPicker.png', (20, 20))[0], type_btn='buttonPhoto', background='white', hover_cursor='white'
+        )
+
+        # -> border
+        border = self.labels(self.frameForTabview, 'Cor da borda:', 0.03, 0.2, 0.5, 0.1, size=13)
+        colorBdEntry = self.entry(self.frameForTabview, 0.4, 0.2, 0.3, 0.13, type_entry='entry', border_color='#d2d2d2', font_size=12)
+        colorPickerBd = self.button(
+            self.frameForTabview, '', 0.7, 0.17, 0.15, 0.17,
+            function=lambda: self.colorPicker(tabview, 'border_color', colorBdEntry),
+            photo=self.image('assets/icon_colorPicker.png', (20, 20))[0], type_btn='buttonPhoto', background='white', hover_cursor='white'
+        )
+
+        # events bind ==========================
+        colorBgEntry.bind('<Return>', lambda e: self.colorPicker(tabview, 'fg_color', colorBgEntry, color_picker='no'))
+        colorBdEntry.bind('<Return>', lambda e: self.colorPicker(tabview, 'border_color', colorBdEntry, color_picker='no'))
+
+        # demonstrative tabview ---------------------
+        tabview = self.tabview(self.frameForTabview, 0.14, 0.4, 0.67, 0.55)
+
+        # line separator higher --------------------
+        lineHigher = self.line_separator(self.frameForTabview, 0.03, 0.35)
+
+    def frame_costumization_treeview(self):
+        # buttons -------------------------
+        self.frameForTreeview = self.frame(self.frameForCostumizations, 0.38, 0.35, 0.2, 0.4, border_color='#d2d2d2', type_frame='labelFrame', text='Tabela')
+
+        # -> line1
+        line1 = self.labels(self.frameForTreeview, 'Cor da linha 1:', 0.03, 0.03, 0.5, 0.06, size=13)
+        colorL1Entry = self.entry(self.frameForTreeview, 0.4, 0.027, 0.3, 0.08, type_entry='entry', border_color='#d2d2d2', font_size=12)
+        colorPickerBg = self.button(
+            self.frameForTreeview, '', 0.7, 0.001, 0.15, 0.13,
+            function=lambda: self.colorPicker(treeview, 'tag1', colorL1Entry),
+            photo=self.image('assets/icon_colorPicker.png', (20, 20))[0], type_btn='buttonPhoto', background='white', hover_cursor='white'
+        )
+
+        # -> line2
+        line2 = self.labels(self.frameForTreeview, 'Cor da linha 2:', 0.03, 0.15, 0.5, 0.06, size=13)
+        colorL2Entry = self.entry(self.frameForTreeview, 0.4, 0.15, 0.3, 0.08, type_entry='entry', border_color='#d2d2d2', font_size=12)
+        colorPickerBd = self.button(
+            self.frameForTreeview, '', 0.7, 0.12, 0.15, 0.13,
+            function=lambda: self.colorPicker(treeview, 'tag2', colorL2Entry),
+            photo=self.image('assets/icon_colorPicker.png', (20, 20))[0], type_btn='buttonPhoto', background='white', hover_cursor='white'
+        )
+
+        # -> text color
+        textColor = self.labels(self.frameForTreeview, 'Cor de texto:', 0.03, 0.27, 0.5, 0.06, size=13)
+        colorFgEntry = self.entry(self.frameForTreeview, 0.4, 0.27, 0.3, 0.08, type_entry='entry', border_color='#d2d2d2', font_size=12)
+        colorPickerFg = self.button(
+            self.frameForTreeview, '', 0.7, 0.24, 0.15, 0.13,
+            function=lambda: self.colorPicker(treeview, 'text_color_treeview', colorFgEntry),
+            photo=self.image('assets/icon_colorPicker.png', (20, 20))[0], type_btn='buttonPhoto', background='white', hover_cursor='white'
+        )
+
+        # events bind ==========================
+        colorL1Entry.bind('<Return>', lambda e: self.colorPicker(treeview, 'tag1', colorL1Entry, color_picker='no'))
+        colorL2Entry.bind('<Return>', lambda e: self.colorPicker(treeview, 'tag2', colorL2Entry, color_picker='no'))
+        colorFgEntry.bind('<Return>', lambda e: self.colorPicker(treeview, 'text_color_treeview', colorFgEntry, color_picker='no'))
+
+        # demonstrative treeview ---------------------
+        frameTreeview = self.frame(self.frameForTreeview, 0.02, 0.4, 0.97, 0.5, border_color='#d2d2d2')
+        treeview = self.treeview(frameTreeview, ['informação 1'])
+        self.lineTreeviewColor['demonstrative'] = 0
+        self.insert_treeview_informations(treeview, ['Linha 1', 'linha2'], 'demonstrative')
+
+    def frame_costumization_entrys(self):
+        # buttons -------------------------
+        self.frameForEntrys = self.frame(self.frameForCostumizations, 0.77, 0.02, 0.2, 0.3, border_color='#d2d2d2', type_frame='labelFrame', text='Entradas de texto')
+        # -> background
+        background = self.labels(self.frameForEntrys, 'Cor de fundo:', 0.03, 0.03, 0.5, 0.1, size=13)
+        colorBgEntry = self.entry(self.frameForEntrys, 0.4, 0.027, 0.3, 0.13, type_entry='entry', border_color='#d2d2d2', font_size=12)
+        colorPickerBg = self.button(
+            self.frameForEntrys, '', 0.7, 0.001, 0.15, 0.17,
+            function=lambda: self.colorPicker(entry, 'fg_color', colorBgEntry),
+            photo=self.image('assets/icon_colorPicker.png', (20, 20))[0], type_btn='buttonPhoto', background='white', hover_cursor='white'
+        )
+        # -> text color
+        textColor = self.labels(self.frameForEntrys, 'Cor do texto:', 0.03, 0.2, 0.5, 0.1, size=13)
+        colorFgEntry = self.entry(self.frameForEntrys, 0.4, 0.2, 0.3, 0.13, type_entry='entry', border_color='#d2d2d2', font_size=12)
+        colorPickerFg = self.button(
+            self.frameForEntrys, '', 0.7, 0.17, 0.15, 0.17,
+            function=lambda: self.colorPicker(entry, 'text_color', colorFgEntry),
+            photo=self.image('assets/icon_colorPicker.png', (20, 20))[0], type_btn='buttonPhoto', background='white', hover_cursor='white'
+        )
+        # -> text color
+        borderColor = self.labels(self.frameForEntrys, 'Cor da borda:', 0.03, 0.37, 0.5, 0.1, size=13)
+        colorBdEntry = self.entry(self.frameForEntrys, 0.4, 0.37, 0.3, 0.13, type_entry='entry', border_color='#d2d2d2', font_size=12)
+        colorPickerBd = self.button(
+            self.frameForEntrys, '', 0.7, 0.34, 0.15, 0.17,
+            function=lambda: self.colorPicker(entry, 'border_color', colorBdEntry),
+            photo=self.image('assets/icon_colorPicker.png', (20, 20))[0], type_btn='buttonPhoto', background='white', hover_cursor='white'
+        )
+
+        # events bind ==========================
+        colorBgEntry.bind('<Return>', lambda e: self.colorPicker(entry, 'fg_color', colorBgEntry, color_picker='no'))
+        colorFgEntry.bind('<Return>', lambda e: self.colorPicker(entry, 'text_color', colorFgEntry, color_picker='no'))
+        colorBdEntry.bind('<Return>', lambda e: self.colorPicker(entry, 'border_color', colorBdEntry, color_picker='no'))
+
+        # line separator higher --------------------
+        lineHigher = self.line_separator(self.frameForEntrys, 0.03, 0.54)
+
+        # demonstrative button ---------------------
+        entry = self.entry(self.frameForEntrys, 0.18, 0.70, 0.6, 0.2, type_entry='entry')
+        entry.insert(0, 'Texto')
+
+    def frame_costumization_labels(self):
+        # buttons -------------------------
+        self.frameForLabels = self.frame(self.frameForCostumizations, 0.77, 0.4, 0.2, 0.3, border_color='#d2d2d2', type_frame='labelFrame', text='Textos')
+
+        # -> text color
+        text1 = self.labels(self.frameForLabels, 'Cor de texto 1:', 0.03, 0.03, 0.5, 0.1, size=13)
+        colorFg1Entry = self.entry(self.frameForLabels, 0.4, 0.027, 0.3, 0.13, type_entry='entry', border_color='#d2d2d2', font_size=12)
+        colorPickerFg1 = self.button(
+            self.frameForLabels, '', 0.7, 0.001, 0.15, 0.17,
+            function=lambda: self.colorPicker(text1, 'text_color', colorFg1Entry),
+            photo=self.image('assets/icon_colorPicker.png', (20, 20))[0], type_btn='buttonPhoto', background='white', hover_cursor='white'
+        )
+
+        text2 = self.labels(self.frameForLabels, 'Cor de texto 2:', 0.03, 0.2, 0.5, 0.1, size=13)
+        colorFg2Entry = self.entry(self.frameForLabels, 0.4, 0.2, 0.3, 0.13, type_entry='entry', border_color='#d2d2d2', font_size=12)
+        colorPickerFg2 = self.button(
+            self.frameForLabels, '', 0.7, 0.17, 0.15, 0.17,
+            function=lambda: self.colorPicker(text2, 'text_color', colorFg2Entry),
+            photo=self.image('assets/icon_colorPicker.png', (20, 20))[0], type_btn='buttonPhoto', background='white', hover_cursor='white'
+        )
+
+        # events bind ==========================
+        colorFg1Entry.bind('<Return>', lambda e: self.colorPicker(text1, 'text_color', colorFg1Entry, color_picker='no'))
+        colorFg2Entry.bind('<Return>', lambda e: self.colorPicker(text2, 'text_color', colorFg2Entry, color_picker='no'))
+
+        # line separator higher --------------------
+        lineHigher = self.line_separator(self.frameForLabels, 0.03, 0.35)
+
+        # demonstrative labels ---------------------
+        text1 = self.labels(self.frameForLabels, 'Texto 1', 0.33, 0.5, 0.3, 0.2)
+        text2 = self.labels(self.frameForLabels, 'Texto 2', 0.33, 0.75, 0.3, 0.2, custom='optional')
+
+    def save(self):
+        # line separator higher --------------------
+        lineHigher = self.line_separator(self.frameForCostumizations, 0.02, 0.8, width=0.95)
+
+        # demonstrative labels ---------------------
+        text1 = self.button(self.frameForCostumizations, 'Salvar', 0.75, 0.86, 0.2, 0.1, function=lambda: self.save_configs())
 
 if __name__ == '__main__':
     app = Aplication()

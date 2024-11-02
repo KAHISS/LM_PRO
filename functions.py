@@ -21,14 +21,39 @@ import cairosvg
 
 class GeneralFunctions:
 
-    @staticmethod
-    def backup_dataBaes():
+    def backup_dataBaes(self):
         # pick directory if origin =========================
-        origin = 'resources'
-        destiny = filedialog.askdirectory(initialdir='Documentos', title='Selecione aonde salvar o sourceCode') + f'/sourceCode{datetime.today().strftime("%d_%m_%Y %H_%M")}'
+        origin = './resources'
+        destiny = os.path.join(os.path.expanduser("~"), "KonectSys/backup/resources")
         # coping ================================
-        if destiny != '' or destiny is not None:
+        if os.path.exists(destiny):
+            shutil.rmtree(destiny)
             shutil.copytree(origin, destiny)
+        else:
+            shutil.copytree(origin, destiny)
+        self.message_window(1, 'Concluído', messagein=f'Backup feito com sucesso')
+
+    @staticmethod
+    def backup_dataBaes_discret():
+        # pick directory if origin =========================
+        origin = './resources'
+        destiny = os.path.join(os.path.expanduser("~"), "KonectSys/backup/resources")
+        # coping ================================
+        if os.path.exists(destiny):
+            shutil.rmtree(destiny)
+            shutil.copytree(origin, destiny)
+        else:
+            shutil.copytree(origin, destiny)
+
+    def loading_database(self):
+        # pick directory if origin =========================
+        origin = os.path.join(os.path.expanduser("~"), "KonectSys/backup/resources")
+        destiny = './resources'
+        # coping ================================
+        if os.path.exists(origin):
+            shutil.rmtree(destiny)
+            shutil.copytree(origin, destiny)
+        self.message_window(1, 'Concluído', messagein=f'Carregamento do backup feito com sucesso')
 
     def insert_treeview_informations(self, treeview, infos, line_color):
         for info in infos:
@@ -2143,7 +2168,7 @@ class FunctionsOfLogin(GeneralFunctions):
 
     def password_window(self, function, parameter):
         self.passwordWindow = Toplevel()
-        self.passwordWindow.title('Senha de administrador - Studio Rosa')
+        self.passwordWindow.title('Senha de administrador - Lais Marques')
         width = self.passwordWindow.winfo_screenwidth()
         height = self.passwordWindow.winfo_screenheight()
         posx = width / 2 - 440 / 2
@@ -2152,7 +2177,7 @@ class FunctionsOfLogin(GeneralFunctions):
         self.passwordWindow.maxsize(440, 370)
         self.passwordWindow.config(bg='#FFFFFF')
         self.passwordWindow.focus_force()
-        self.passwordWindow.iconphoto(False, PhotoImage(file='assets/Marca-Morgania-Sousa.png'))
+        self.passwordWindow.iconphoto(False, PhotoImage(file='assets/logo.png'))
 
         # frame of inputs ===========================================================
         frameInputs = self.frame(self.passwordWindow, 0, 0.01, 1, 0.985)
@@ -2224,5 +2249,107 @@ class FunctionsOfLogin(GeneralFunctions):
 
 class FunctionsOfConfigurations(GeneralFunctions):
 
-    def colorPicker(self, widget, color, attribute):
-        selectorColor = askcolor()
+    def colorPicker(self, widget, type_color, entry_color, color_picker='yes'):
+        if self.openColorPicker or color_picker == 'no':
+            selectorColor = ''
+            match color_picker:
+                case 'yes':
+                    # pick color ==========================
+                    self.openColorPicker = False
+                    selectorColor = askcolor(initialcolor=entry_color.get())[1]
+                    self.openColorPicker = True
+                case 'no':
+                    selectorColor = entry_color.get()
+            if selectorColor is not None:
+                # update widget and color of entry =======================
+                match type_color:
+                    case 'fg_color':
+                        try:
+                            widget.configure(fg_color=selectorColor)
+                        except TclError:
+                            self.message_window(3, 'Erro', 'Valor hexadecimal inválido ou cor não existente')
+                    case 'text_color':
+                        try:
+                            widget.configure(text_color=selectorColor)
+                        except TclError:
+                            self.message_window(3, 'Erro', 'Valor hexadecimal inválido ou cor não existente')
+                    case 'border_color':
+                        try:
+                            widget.configure(border_color=selectorColor)
+                        except TclError:
+                            self.message_window(3, 'Erro', 'Valor hexadecimal inválido ou cor não existente')
+                    case 'hover_color':
+                        try:
+                            widget.configure(hover_color=selectorColor)
+                        except TclError:
+                            self.message_window(3, 'Erro', 'Valor hexadecimal inválido ou cor não existente')
+                    case 'tag1':
+                        try:
+                            widget.tag_configure('oddrow', background=selectorColor)
+                        except TclError:
+                            self.message_window(3, 'Erro', 'Valor hexadecimal inválido ou cor não existente')
+                    case 'tag2':
+                        try:
+                            widget.tag_configure('evenrow', background=selectorColor)
+                        except TclError:
+                            self.message_window(3, 'Erro', 'Valor hexadecimal inválido ou cor não existente')
+                    case 'text_color_treeview':
+                        try:
+                            self.style_treeview.configure('Treeview', foreground=selectorColor)
+                        except TclError:
+                            self.message_window(3, 'Erro', 'Valor hexadecimal inválido ou cor não existente')
+                entry_color.delete(0, END)
+                entry_color.insert(0, selectorColor)
+        else:
+            # show message error =====================================================
+            self.message_window(2, 'Já em uso', 'O seletor de cores ainda está em uso')
+
+    def save_configs(self):
+        # saving configs of buttons ================================
+        framesOfWidgets = [self.frameForButtons, self.frameForFrames, self.frameForTabview, self.frameForTreeview, self.frameForEntrys, self.frameForLabels]
+        colors = []
+        for index, frame in enumerate(framesOfWidgets):
+            for widget in frame.winfo_children():
+                if isinstance(widget, CTkEntry):
+                    colors.append(widget.get())
+            match index:
+                case 0:
+                    self.dataBases['config'].crud(f'UPDATE Botões SET cor_de_fundo="{colors[0]}", cor_de_texto="{colors[1]}", cor_da_borda="{colors[2]}", cor_do_hover="{colors[3]}"')
+                case 1:
+                    self.dataBases['config'].crud(f'UPDATE Frames SET cor_de_fundo="{colors[0]}", cor_da_borda="{colors[1]}"')
+                case 2:
+                    self.dataBases['config'].crud(f'UPDATE Tabviews SET cor_de_fundo="{colors[0]}", cor_da_borda="{colors[1]}"')
+                case 3:
+                    self.dataBases['config'].crud(f'UPDATE Treeviews SET cor_da_linha1="{colors[0]}", cor_da_linha2="{colors[1]}", cor_de_texto="{colors[2]}"')
+                case 4:
+                    self.dataBases['config'].crud(f'UPDATE Entrys SET cor_de_fundo="{colors[0]}", cor_de_texto="{colors[1]}", cor_da_borda="{colors[2]}"')
+                case 5:
+                    self.dataBases['config'].crud(f'UPDATE Labels SET cor_de_texto1="{colors[0]}", cor_de_texto2="{colors[1]}"')
+            del colors[0:]
+        self.message_window(1, 'Concluído', 'Reabra o programa para efetuar as alterações')
+
+    def load_configs(self):
+        framesOfWidgets = [self.frameForButtons, self.frameForFrames, self.frameForTabview, self.frameForTreeview, self.frameForEntrys, self.frameForLabels]
+        entrys = []
+        colors = []
+        for indexf, frame in enumerate(framesOfWidgets):
+            for widget in frame.winfo_children():
+                if isinstance(widget, CTkEntry):
+                    entrys.append(widget)
+            match indexf:
+                case 0:
+                    colors = self.dataBases['config'].searchDatabase('SELECT * FROM Botões')[0]
+                case 1:
+                    colors = self.dataBases['config'].searchDatabase('SELECT * FROM Frames')[0]
+                case 2:
+                    colors = self.dataBases['config'].searchDatabase('SELECT * FROM Tabviews')[0]
+                case 3:
+                    colors = self.dataBases['config'].searchDatabase('SELECT * FROM Treeviews')[0]
+                case 4:
+                    colors = self.dataBases['config'].searchDatabase('SELECT * FROM Entrys')[0]
+                case 5:
+                    colors = self.dataBases['config'].searchDatabase('SELECT * FROM Labels')[0]
+            for indexc, color in enumerate(colors):
+                entrys[indexc].insert(0, color)
+            del entrys[0:]
+            colors = []

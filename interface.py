@@ -2,18 +2,53 @@ from tkinter import ttk
 from tkinter import *
 from tkcalendar import *
 from customtkinter import *
+from functions import GeneralFunctions
 
 
-class Interface():
-    @staticmethod
-    def labels(window, text, posx, posy, width=0.1, height=0.1, color='black', background='white', position=W, photo=None, size=21, font='Arial'):
-        label = CTkLabel(window, text=text, font=CTkFont(font, size, 'bold'), fg_color=background, anchor=position, text_color=color, image=photo)
-        label.place(relx=posx, rely=posy, relwidth=width, relheight=height)
+class Interface(GeneralFunctions):
+    def __init__(self):
+        self.colorsOfButtons = self.dataBases['config'].searchDatabase('SELECT * FROM Botões')[0]
+        self.colorsOfFrames = self.dataBases['config'].searchDatabase('SELECT * FROM Frames')[0]
+        self.colorsOfTabviews = self.dataBases['config'].searchDatabase('SELECT * FROM Tabviews')[0]
+        self.colorsOfTreeviews = self.dataBases['config'].searchDatabase('SELECT * FROM Treeviews')[0]
+        self.colorsOfEntrys = self.dataBases['config'].searchDatabase('SELECT * FROM Entrys')[0]
+        self.colorsOfLabels = self.dataBases['config'].searchDatabase('SELECT * FROM Labels')[0]
+
+    def labels(self, window, text, posx, posy, width=0.1, height=0.1, color='black', background='#ffffff', position=W, photo=None, size=21, font='Arial', custom='default'):
+        label = None
+        match custom:
+            case 'default':
+                label = CTkLabel(
+                    window, text=text, font=CTkFont(font, size, 'bold'),
+                    fg_color=self.colorsOfFrames[0],
+                    anchor=position, text_color=self.colorsOfLabels[0] if custom == 'default' else self.colorsOfTabviews[1], image=photo
+                )
+                label.place(relx=posx, rely=posy, relwidth=width, relheight=height)
+            case 'tabview':
+                label = CTkLabel(
+                    window, text=text, font=CTkFont(font, size, 'bold'),
+                    fg_color=self.colorsOfTabviews[0],
+                    anchor=position, text_color=self.colorsOfLabels[0] if custom == 'default' else self.colorsOfTabviews[1], image=photo
+                )
+                label.place(relx=posx, rely=posy, relwidth=width, relheight=height)
+            case 'custom':
+                label = CTkLabel(
+                    window, text=text, font=CTkFont(font, size, 'bold'),
+                    fg_color=background,
+                    anchor=position, text_color='black', image=photo
+                )
+                label.place(relx=posx, rely=posy, relwidth=width, relheight=height)
+            case 'optional':
+                label = CTkLabel(
+                    window, text=text, font=CTkFont(font, size, 'bold'),
+                    fg_color=self.colorsOfFrames[0],
+                    anchor=position, text_color=self.colorsOfLabels[1], image=photo
+                )
+                label.place(relx=posx, rely=posy, relwidth=width, relheight=height)
         return label
 
-    @staticmethod
     def entry(
-            window, posx, posy, width=0.1, height=0.1, value=None, type_entry='list', place_text='', position=LEFT, validity='no', function=None, background='#FFFFFF',
+            self, window, posx, posy, width=0.1, height=0.1, value=None, type_entry='list', place_text='', position=LEFT, validity='no', function=None, background='#FFFFFF',
             radius=20, border=0, show='', font_size=16, border_color='#b59b50'
     ):
         if value is None:
@@ -22,21 +57,21 @@ class Interface():
         match type_entry:
             case 'list':
                 camp = CTkComboBox(
-                    window, fg_color='#FFFFFF', text_color='black', border_color='#b59b50', values=value, dropdown_fg_color='white', dropdown_hover_color='#b59b50',
-                    button_color='#e8d499', button_hover_color='#b59b50', font=CTkFont('Arial', font_size), dropdown_text_color='black', command=function
+                    window, fg_color=self.colorsOfEntrys[0], text_color=self.colorsOfEntrys[1], border_color=self.colorsOfEntrys[2], values=value, dropdown_fg_color=self.colorsOfButtons[0], dropdown_hover_color=self.colorsOfButtons[3],
+                    button_color=self.colorsOfButtons[0], button_hover_color=self.colorsOfButtons[3], font=CTkFont('Arial', font_size), dropdown_text_color=self.colorsOfButtons[1], command=function
                 )
                 camp.place(relx=posx, rely=posy, relwidth=width, relheight=height)
                 camp.set('')
             case 'entry':
                 camp = CTkEntry(
-                    window, fg_color='#FFFFFF', text_color='#000000', border_color=border_color,  font=CTkFont('Arial', font_size), placeholder_text=place_text,
+                    window, fg_color=self.colorsOfEntrys[0], text_color=self.colorsOfEntrys[1], border_color=self.colorsOfEntrys[2], font=CTkFont('Arial', font_size), placeholder_text=place_text,
                     placeholder_text_color='#222222', justify=position, show=show
                 )
                 camp.place(relx=posx, rely=posy, relwidth=width, relheight=height)
             case 'date':
                 camp = DateEntry(
-                    window, width=12, font='Arial', background='#fff', fg='black', locale='pt_BR', headersbackground='#e8d499', headersforeground='#756434',
-                    foreground='#756434', highlightthickness=7, highlightcolor='black'
+                    window, width=12, font='Arial', background=self.colorsOfButtons[0], fg=self.colorsOfEntrys[1], locale='pt_BR', headersbackground=self.colorsOfButtons[2], headersforeground=self.colorsOfButtons[1],
+                    foreground=self.colorsOfLabels[0], highlightthickness=7, highlightcolor='black'
                 )
 
                 if validity == 'no':
@@ -46,82 +81,119 @@ class Interface():
                 camp.place(relx=posx, rely=posy, relwidth=width, relheight=height)
             case 'entryLogin':
                 camp = CTkEntry(
-                    window, fg_color=background, text_color='#000000', border_color='#b59b50', font=CTkFont('Arial', 16), placeholder_text=place_text,
-                    placeholder_text_color='#222222', justify=position, corner_radius=radius, border_width=border, show=show
+                    window, fg_color=self.colorsOfEntrys[0], text_color=self.colorsOfEntrys[1], border_color=self.colorsOfEntrys[2], font=CTkFont('Arial', 16), placeholder_text=place_text,
+                    placeholder_text_color=self.colorsOfLabels[0], justify=position, corner_radius=radius, border_width=border, show=show
                 )
                 camp.place(relx=posx, rely=posy, relwidth=width, relheight=height)
         return camp
 
-    @staticmethod
     def button(
-            window, text, posx, posy,  width=None, height=None, function=None, type_btn='normal', order_list=None, photo=None, background='#917c3f', retur_variable=None, value='', hover_cursor='#c9b883',
-            border=2, color='#ffffff'
+            self, window, text, posx, posy, width=None, height=None, function=None, type_btn='normal', order_list=None, photo=None, background='#917c3f', retur_variable=None, value='', hover_cursor='#c9c9c9',
+            border=2, color='#ffffff', border_color='#b59b50', custom='default'
     ):
         btn = None
         match type_btn:
             case 'normal':
                 btn = CTkButton(
                     window, text=text, font=CTkFont('Arial', 17, 'bold'), command=function, image=photo,
-                    fg_color=background, text_color=color, border_width=border, border_color='#b59b50', hover_color=hover_cursor,
+                    fg_color=self.colorsOfButtons[0], text_color=self.colorsOfButtons[1], border_width=border, border_color=self.colorsOfButtons[2], hover_color=self.colorsOfButtons[3],
                     cursor='hand2'
                 )
                 btn.place(relx=posx, rely=posy, relwidth=width, relheight=height)
             case 'buttonPhoto':
-                btn = CTkButton(window, command=function, image=photo, fg_color='transparent', cursor='hand2', text='', hover_color=hover_cursor, corner_radius=0)
+                btn = CTkButton(window, command=function, image=photo, fg_color=self.colorsOfFrames[0] if custom == 'default' else self.colorsOfEntrys[0], cursor='hand2', text='', hover_color=self.colorsOfButtons[3], corner_radius=0)
+                btn.place(relx=posx, rely=posy, relwidth=width, relheight=height)
+            case 'tabview':
+                btn = CTkButton(window, command=function, image=photo, fg_color=self.colorsOfTabviews[0], cursor='hand2', text='', hover_color=self.colorsOfButtons[3], corner_radius=0)
                 btn.place(relx=posx, rely=posy, relwidth=width, relheight=height)
             case 'optionMenu':
                 btn = CTkOptionMenu(
                     window, font=CTkFont('Arial', 17, 'bold'), command=function, values=order_list,
-                    fg_color='#c9b881', button_color='#917c3f', text_color='white', dropdown_fg_color='#917c3f'
+                    fg_color=self.colorsOfButtons[0], button_color=self.colorsOfButtons[0], text_color=self.colorsOfButtons[1], dropdown_fg_color=self.colorsOfButtons[0], dropdown_text_color=self.colorsOfButtons[1],
+                    dropdown_hover_color=self.colorsOfButtons[3], button_hover_color=self.colorsOfButtons[3]
                 )
                 btn.place(relx=posx, rely=posy, relwidth=width, relheight=height)
             case 'radioButton':
                 btn = CTkRadioButton(
-                    window, text=text, variable=retur_variable, value=value, text_color='black', border_color='#f7e0a1',
-                    font=CTkFont('Arial', 16, 'bold'), hover_color='#b5517d', fg_color='#b59b50'
+                    window, text=text, variable=retur_variable, value=value, text_color=self.colorsOfLabels[0], border_color=self.colorsOfButtons[2],
+                    font=CTkFont('Arial', 16, 'bold'), hover_color=self.colorsOfButtons[3], fg_color=self.colorsOfButtons[2]
                 )
                 btn.place(relx=posx, rely=posy, relwidth=width, relheight=height)
         return btn
 
-    @staticmethod
-    def frame(window, posx, posy,  width=None, height=None, background_color='white', border_color='#b59b50', border=2, radius=5, type_frame='default'):
+    def ask(self, window, text1, text2, posx, posy, entry, width=None, height=None):
+        question = StringVar(value='')
+        yes = self.button(
+            window, text1, posx, posy, width, height, type_btn='radioButton',
+            value=text1, retur_variable=question
+        )
+        no = self.button(
+            window, text2, posx + 0.07, posy, width, height, type_btn='radioButton',
+            value=text2, retur_variable=question
+        )
+        yes.bind(
+            '<Button-1>', lambda e: [
+                entry.configure(state='normal', fg_color='#ffffff'),
+                entry.delete(0, END),
+            ]
+        )
+        no.bind(
+            '<Button-1>', lambda e: [
+                entry.delete(0, END),
+                entry.insert(0, '===X==='),
+                entry.configure(state='disable', fg_color='#f4f4f4')
+            ]
+        )
+
+        return [question, yes, no]
+
+    def frame(self, window, posx, posy, width=None, height=None, background_color='white', border_color='#b59b50', border=2, radius=5, type_frame='default', text=''):
         frm = None
         match type_frame:
             case 'default':
-                frm = CTkFrame(window, fg_color=background_color, border_color=border_color, border_width=border, corner_radius=radius)
+                frm = CTkFrame(window, fg_color=self.colorsOfFrames[0], border_color=self.colorsOfFrames[1], border_width=border, corner_radius=radius)
                 frm.place(relx=posx, rely=posy, relwidth=width, relheight=height)
             case 'labelFrame':
-                frm = LabelFrame(window, text='Botões', borderwidth=border, bg='white', font=('Arial', '12', 'bold'))
+                frm = LabelFrame(window, text=text, borderwidth=border, bg=self.colorsOfFrames[0], font=('Arial', '12', 'bold'), fg=self.colorsOfLabels[0])
+                frm.place(relx=posx, rely=posy, relwidth=width, relheight=height)
+            case 'scollFrame':
+                frm = CTkScrollableFrame(window, fg_color=self.colorsOfFrames[0], border_color=self.colorsOfFrames[1], border_width=border, corner_radius=radius)
                 frm.place(relx=posx, rely=posy, relwidth=width, relheight=height)
         return frm
 
     @staticmethod
     def notebook(locate, posx=0, posy=0.01, width=1, height=1):
-        tab = ttk.Notebook(locate)
+        tab = ttk.Notebook(locate,)
         tab.place(relx=0, rely=0.01, relwidth=1, relheight=1)
         return tab
 
     @staticmethod
     def main_frame_notebook(locate, name_tab, bg='white'):
         frame = Frame(locate, background=bg)
-        frame.place(relx=0, rely=0.01, relwidth=1, relheight=1)
+        frame.place(relx=0, rely=0, relwidth=1, relheight=1)
         locate.add(frame, text=name_tab, padding=[5, 0])
         return frame
 
-    @staticmethod
-    def tabvieew(locate, posx, posy, width, height, background='#e8d499', border='#b59b50'):
-        tab = CTkTabview(
-            locate, fg_color=background, border_width=3, border_color=border, segmented_button_fg_color='#b59b50', segmented_button_unselected_color='#b59b50',
-            text_color='white', segmented_button_selected_color='#917c3f', segmented_button_unselected_hover_color='#c9b883', segmented_button_selected_hover_color='#c9b883'
-        )
-        tab.place(relx=posx, rely=posy, relwidth=width, relheight=height)
+    def tabview(self, locate, posx, posy, width, height, background='#b59b50', border='#b59b50', type_tab='default'):
+        tab = None
+        if type_tab == 'default':
+            tab = CTkTabview(
+                locate, fg_color=self.colorsOfTabviews[0], border_width=3, border_color=self.colorsOfTabviews[1], segmented_button_fg_color=self.colorsOfButtons[2], segmented_button_unselected_color=self.colorsOfButtons[0],
+                text_color=self.colorsOfButtons[1], segmented_button_selected_color=self.colorsOfButtons[0], segmented_button_unselected_hover_color=self.colorsOfButtons[3], segmented_button_selected_hover_color=self.colorsOfButtons[2]
+            )
+            tab.place(relx=posx, rely=posy, relwidth=width, relheight=height)
+        elif type_tab == 'frame':
+            tab = CTkTabview(
+                locate, fg_color=self.colorsOfFrames[0], border_width=3, border_color=self.colorsOfFrames[1], segmented_button_fg_color=self.colorsOfButtons[2], segmented_button_unselected_color=self.colorsOfButtons[0],
+                text_color=self.colorsOfButtons[1], segmented_button_selected_color=self.colorsOfButtons[0], segmented_button_unselected_hover_color=self.colorsOfButtons[3], segmented_button_selected_hover_color=self.colorsOfButtons[2]
+            )
+            tab.place(relx=posx, rely=posy, relwidth=width, relheight=height)
         return tab
 
-    @staticmethod
-    def scrollbar(locate, orient, position, x_or_y):
+    def scrollbar(self, locate, orient, position, x_or_y):
         scrollbar = CTkScrollbar(
-            locate, orientation=orient, button_color='#c9b883', minimum_pixel_length=200, fg_color='#d8d8d8', border_spacing=1,
-            button_hover_color='#b59b50'
+            locate, orientation=orient, button_color=self.colorsOfButtons[0], minimum_pixel_length=200, fg_color='#d8d8d8', border_spacing=1,
+            button_hover_color=self.colorsOfButtons[3]
         )
         scrollbar.pack(side=position, fill=x_or_y)
         return scrollbar
@@ -139,6 +211,8 @@ class Interface():
         # configurando
         for name in informations:
             if name == 'ID':
+                treeview.column(f'{name}', minwidth=0, width=50, anchor=CENTER, stretch=False)
+            elif name in ['Observações', 'Foto', 'observação', 'foto']:
                 treeview.column(f'{name}', minwidth=0, width=0, anchor=CENTER, stretch=False)
             elif name in ['Cliente', 'Nome', 'Serviço', 'Profissional']:
                 treeview.column(f'{name}', minwidth=0, width=400, anchor=CENTER, stretch=False)
@@ -148,16 +222,24 @@ class Interface():
                 treeview.column(f'{name}', minwidth=20, width=250, anchor=CENTER, stretch=False)
         for names in informations:
             treeview.heading(f'{names}', text=f'{names}')
-        treeview.tag_configure('oddrow', background='#e8d499')
-        treeview.tag_configure('evenrow', background='#ebe4ce')
+        treeview.tag_configure('oddrow', background=self.colorsOfTreeviews[0])
+        treeview.tag_configure('evenrow', background=self.colorsOfTreeviews[1])
+        treeview.tag_configure('branca', background='#FFFFFF', foreground='black')
+        treeview.tag_configure('cinza', background='#616161', foreground='white')
+        treeview.tag_configure('amarela', background='#ffff00', foreground='black')
+        treeview.tag_configure('laranja', background='#db8104', foreground='white')
+        treeview.tag_configure('verde', background='#029c09', foreground='white')
+        treeview.tag_configure('azul', background='#5d73fc', foreground='white')
+        treeview.tag_configure('roxa', background='#b66eff', foreground='white')
+        treeview.tag_configure('marrom', background='#756443', foreground='white')
+        treeview.tag_configure('preta', background='#3d3d3d', foreground='white')
         treeview.place(relx=0.002, rely=0.01, relwidth=0.985, relheight=0.95)
         return treeview
 
-    @staticmethod
-    def text_box(locate, posx, posy, width, height, bg='white'):
+    def text_box(self, locate, posx, posy, width, height, bg='white'):
         textBox = CTkTextbox(
-            locate, border_width=2, border_color='#b59b50', fg_color=bg, text_color='black', font=CTkFont('Arial', 14),
-            scrollbar_button_color='#c9b883', scrollbar_button_hover_color='#b59b50'
+            locate, border_width=2, border_color=self.colorsOfFrames[1], fg_color=self.colorsOfFrames[0], text_color=self.colorsOfLabels[0], font=CTkFont('Arial', 14),
+            scrollbar_button_color=self.colorsOfButtons[0], scrollbar_button_hover_color=self.colorsOfButtons[3]
         )
         textBox.place(relx=posx, rely=posy, relwidth=width, relheight=height)
         return textBox
@@ -167,7 +249,7 @@ class Interface():
             send_message='no'
     ):
         # buttons management ============
-        frameBtns = self.tabvieew(locate, posx, posy, width, height)
+        frameBtns = self.tabview(locate, posx, posy, width, height)
         frameBtns.add('Gerenciamento')
 
         if type_btns == 'complete':
@@ -221,12 +303,12 @@ class Interface():
             # buttons treeview ================
             frameBtns.add('Tabela')
             # order --------------
-            labelOrder = self.labels(frameBtns.tab('Tabela'), 'Ordem', 0.25, 0.0, width=0.50, height=0.2, color='#b59b50', background='#e8d499', position=CENTER)
+            labelOrder = self.labels(frameBtns.tab('Tabela'), 'Ordem', 0.25, 0.0, width=0.50, height=0.2, position=CENTER, custom='tabview').configure(text_color=self.colorsOfLabels[1])
             orderBtn = self.button(frameBtns.tab('Tabela'), 'Deletar', 0.225, 0.20, 0.55, 0.2, type_btn='optionMenu', function=functions['order'], order_list=values)
             # pdf and informations ----------------
-            labelInfo = self.labels(frameBtns.tab('Tabela'), 'Informações', 0.17, 0.45, width=0.7, height=0.2, color='#b59b50', background='#e8d499', position=CENTER)
-            pdf = self.button(frameBtns.tab('Tabela'), '', 0.3, 0.7, 0.2, photo=icons['pdf'][0], type_btn='buttonPhoto', background='pink', function=functions['pdf'])
-            informacao = self.button(frameBtns.tab('Tabela'), '', 0.53, 0.7, 0.2, photo=icons['informações'][0], type_btn='buttonPhoto', background='pink', function=functions['informations'])
+            labelInfo = self.labels(frameBtns.tab('Tabela'), 'Informações', 0.17, 0.45, width=0.7, height=0.2, color='#b59b50', background='#e8d499', position=CENTER, custom='tabview').configure(text_color=self.colorsOfLabels[1])
+            pdf = self.button(frameBtns.tab('Tabela'), '', 0.3, 0.7, 0.2, photo=icons['pdf'][0], type_btn='tabview', background='pink', function=functions['pdf'])
+            informacao = self.button(frameBtns.tab('Tabela'), '', 0.53, 0.7, 0.2, photo=icons['informações'][0], type_btn='tabview', background='pink', function=functions['informations'])
             return orderBtn
 
     def informations_simple(self, locate, type_info, informations, funcs, icons, photo):
@@ -254,9 +336,8 @@ class Interface():
 
         return {'entry': informationsEntry, 'treeview': treeviewInformation, 'order': orderBtnInformations}
 
-    @staticmethod
-    def line_separator(locate, posx, posy):
-        lineHigher = Canvas(locate, background='#FFFFFF', highlightthickness=0)
-        lineHigher.place(relx=posx, rely=posy, relwidth=0.9, relheight=0.1)
-        lineHigher.create_line(1, 15, 1000, 15, fill='#3b321a', width=2)
+    def line_separator(self, locate, posx, posy, width=0.9, height=0.1):
+        lineHigher = Canvas(locate, background=self.colorsOfFrames[0], highlightthickness=0)
+        lineHigher.place(relx=posx, rely=posy, relwidth=width, relheight=height)
+        lineHigher.create_line(1, 15, 3000, 15, fill=self.colorsOfFrames[1], width=2)
         return lineHigher
