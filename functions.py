@@ -2412,7 +2412,6 @@ class FunctionsOfIntegrationWithGoogleCalendar(GeneralFunctions):
             service = info[0].split('-')[1].strip()
             value = info[0].split('-')[2].strip()
             time = info[1]['dateTime'][11:16]
-            print(name, service, value, len(time))
 
             self.dataBases['schedule'].crud(
                 registerScheduling.format(

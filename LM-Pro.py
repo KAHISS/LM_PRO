@@ -385,6 +385,13 @@ class Aplication(
                 [name[2] for name in self.search_service(informations=self.searching_list(self.serviceSchedulingEntry.get(), 1, 'serviço'), save_seacrh=False, insert=False)][0])
             if len([name[2] for name in self.search_service(informations=self.searching_list(self.serviceSchedulingEntry.get(), 1, 'serviço'), save_seacrh=False, insert=False)]) > 0 and self.serviceSchedulingEntry.get() != '' else ''
         ])
+        self.serviceSchedulingEntry.configure(command=lambda e: [
+            self.valueSchedulingEntry.delete(0, END),
+            self.valueSchedulingEntry.insert(
+                0,
+                [name[2] for name in self.search_service(informations=self.searching_list(self.serviceSchedulingEntry.get(), 1, 'serviço'), save_seacrh=False, insert=False)][0])
+            if len([name[2] for name in self.search_service(informations=self.searching_list(self.serviceSchedulingEntry.get(), 1, 'serviço'), save_seacrh=False, insert=False)]) > 0 and self.serviceSchedulingEntry.get() != '' else ''
+        , print('hgu')])
         self.cheatSchedulingEntry.bind('<Return>', lambda e: self.register_scheduling(entryPicker()[0], type_function='add', treeview=self.treeviewScheduling, type_insert='codeEventBind', entrys=entryPicker()[1][1:4], verification=False))
 
         # pick up entrys =============================
