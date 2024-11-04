@@ -31,7 +31,7 @@ class Aplication(
         self.lastSearch = {}
         self.dataBases = {
             'schedule': DataBase('resources/Agendamentos.db'),
-            'informations': DataBase('resources/informações.db'),
+            'informations': DataBase('resources/informacoes.db'),
             'stock': DataBase('resources/Estoque.db'),
             'cash': DataBase('resources/Caixa.db'),
             'config': DataBase('resources/config.db'),
