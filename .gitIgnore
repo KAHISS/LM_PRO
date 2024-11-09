@@ -6,3 +6,4 @@ __pycache__
 LM-Pro.spec
 resources/token.json
 credentials.json
+update.spec
