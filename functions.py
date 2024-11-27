@@ -8,6 +8,7 @@ from tkinter.colorchooser import askcolor
 from PIL import Image
 from PIL import ImageDraw
 from PIL import ImageFont
+from time import sleep
 # functions libs ==================================
 import os
 import requests
@@ -36,6 +37,27 @@ class GeneralFunctions:
             shutil.copytree(origin, destiny)
         self.message_window(1, 'Concluído', messagein=f'Backup feito com sucesso')
 
+    def backup_dataBase_cloud(self):
+        try:
+            # making request in the site ========================
+            request = requests.get("https://www.google.com/intl/pt-br/drive/about.html")
+        except Exception:
+            # error in request ===================
+            self.message_window(typem=2, titlein='Backup local', messagein='Foi feito só o backup local, conecte-se a internet para fazer o backup na nuvem')
+        else:
+            # pick directory if origin =========================
+            diretoryCloud = self.dataBases['backup'].searchDatabase("SELECT caminho FROM Load")[0][0]
+            origin = './resources'
+            destiny = os.path.join(diretoryCloud, "LM-PRO/backup/resources")
+            # coping ================================
+            if os.path.exists(destiny):
+                print("tem")
+                shutil.rmtree(destiny)
+                sleep(1)
+                shutil.copytree(origin, destiny)
+            else:
+                shutil.copytree(origin, destiny)
+
     @staticmethod
     def backup_dataBaes_discret():
         # pick directory if origin =========================
@@ -57,6 +79,33 @@ class GeneralFunctions:
             shutil.rmtree(destiny)
             shutil.copytree(origin, destiny)
         self.message_window(1, 'Concluído', messagein=f'Carregamento do backup feito com sucesso')
+
+    def loading_database_cloud(self):
+        try:
+            # making request in the site ========================
+            request = requests.get("https://www.google.com/intl/pt-br/drive/about.html")
+        except Exception:
+            # error in request ===================
+            self.message_window(typem=2, titlein='Backup local', messagein='Foi feito só o carregamento do backup local, conecte-se a internet para fazer o backup na nuvem')
+            self.loading_database()
+        else:
+            # pick directory if origin =========================
+            diretoryCloud = self.dataBases['backup'].searchDatabase("SELECT caminho FROM Load")[0][0]
+            destiny = './resources'
+            origin = os.path.join(diretoryCloud, "LM-PRO/backup/resources")
+            # coping ================================
+            if os.path.exists(destiny):
+                shutil.rmtree(destiny)
+                shutil.copytree(origin, destiny)
+            else:
+                shutil.copytree(origin, destiny)
+            self.message_window(1, 'Concluído', messagein=f'Carregamento do backup feito com sucesso')
+
+    def select_diretory_of_cloud(self):
+        # select diretory ==========================
+        diretory = filedialog.askdirectory(title='Escolha o diretório da nuvem')
+        # updating backup
+        self.dataBases['backup'].crud(f'UPDATE Load SET caminho = "{diretory}"')
 
     def insert_treeview_informations(self, treeview, infos, line_color):
         for info in infos:

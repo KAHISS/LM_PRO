@@ -35,6 +35,7 @@ class Aplication(
             'stock': DataBase('resources/Estoque.db'),
             'cash': DataBase('resources/Caixa.db'),
             'config': DataBase('resources/config.db'),
+            'backup': DataBase('resources/backup.db'),
         }
         self.openColorPicker = True
         self.criptography = Criptography()
@@ -109,11 +110,13 @@ class Aplication(
         self.root.geometry(f'{self.root.winfo_screenwidth()}x{self.root.winfo_screenheight()}')
         self.root.configure(background='#FFFFFF')
         self.root.iconphoto(False, PhotoImage(file='assets/logo.png'))
-        self.root.wm_protocol('WM_DELETE_WINDOW', lambda: [self.backup_dataBaes_discret(), self.loginWindow.destroy()])
+        self.root.wm_protocol('WM_DELETE_WINDOW', lambda: [self.backup_dataBase_cloud() ,self.backup_dataBaes_discret(), self.loginWindow.destroy()])
+        self.loading_database_cloud()
         # event bind ============================================
         self.root.bind_all('<Control-b>', lambda e: self.backup_dataBaes())
-        self.root.bind_all('<Control-l>', lambda e: self.loading_database())
+        self.root.bind_all('<Control-l>', lambda e: self.loading_database_cloud())
         self.root.bind_all('<Control-g>', lambda e: self.getEventDay())
+        self.root.bind_all('<Control-d>', lambda e: self.select_diretory_of_cloud())
 
         # style notebook
         style = ttk.Style()
