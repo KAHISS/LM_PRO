@@ -51,7 +51,6 @@ class GeneralFunctions:
             destiny = os.path.join(diretoryCloud, "LM-PRO/backup/resources")
             # coping ================================
             if os.path.exists(destiny):
-                print("tem")
                 shutil.rmtree(destiny)
                 sleep(1)
                 shutil.copytree(origin, destiny)

@@ -19,7 +19,7 @@ class SendMessage:
     @staticmethod
     def pause(file):
         while True:
-            abriu = pyautogui.locateCenterOnScreen(file)
+            abriu = pyautogui.locateCenterOnScreen(file, confidence=0.8)
             if abriu:
                 break
             else:
